@@ -1,0 +1,67 @@
+services:
+  ### Base de données MySQL ###
+  mysql:
+    image: mysql:8.4
+    container_name: immomanager_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-immomanager}
+      MYSQL_USER: ${DB_USERNAME:-immomanager}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootsecret}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-rootsecret}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  ### Backend Laravel (PHP-FPM) ###
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: immomanager_backend
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${APP_ENV:-production}
+      APP_DEBUG: ${APP_DEBUG:-false}
+      APP_URL: ${APP_URL:-http://localhost}
+      APP_KEY: ${APP_KEY:-}
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-immomanager}
+      DB_USERNAME: ${DB_USERNAME:-immomanager}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
+      SESSION_DRIVER: database
+      QUEUE_CONNECTION: database
+      CACHE_STORE: database
+      MAIL_MAILER: ${MAIL_MAILER:-log}
+    volumes:
+      - backend_storage:/var/www/html/storage/app/public
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  ### Frontend React + Nginx ###
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-}
+    container_name: immomanager_frontend
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-80}:80"
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:
+  backend_storage:
