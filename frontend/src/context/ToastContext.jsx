@@ -19,6 +19,7 @@ export function ToastProvider({ children }) {
   }, [remove]);
 
   const toast = useCallback((message) => push(message, 'success'), [push]);
+  toast.success = useCallback((message) => push(message, 'success'), [push]);
   toast.error = useCallback((message) => push(message, 'error'), [push]);
   toast.info = useCallback((message) => push(message, 'info'), [push]);
 

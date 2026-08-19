@@ -1,10 +1,27 @@
+/** Mapping des codes devise non standards vers des codes Intl valides. */
+const CURRENCY_MAP = {
+  FCFA: 'XAF', // Franc CFA (CEMAC) → Intl code
+};
+
+/** Informations complètes sur les devises supportées. */
+export const CURRENCIES = [
+  { code: 'EUR', label: 'Euro', symbol: '€' },
+  { code: 'FCFA', label: 'Franc CFA', symbol: 'Fr' },
+  { code: 'USD', label: 'Dollar US', symbol: '$' },
+  { code: 'XOF', label: 'Franc CFA (UEMOA)', symbol: 'Fr' },
+  { code: 'CAD', label: 'Dollar canadien', symbol: 'CA$' },
+  { code: 'CHF', label: 'Franc suisse', symbol: 'CHF' },
+  { code: 'MAD', label: 'Dirham marocain', symbol: 'MAD' },
+];
+
 /** Formate un montant selon la devise. */
 export function formatMoney(amount, currency = 'EUR') {
   const value = Number(amount ?? 0);
+  const intlCode = CURRENCY_MAP[currency] || currency;
   try {
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
-      currency,
+      currency: intlCode,
       maximumFractionDigits: value % 1 === 0 ? 0 : 2,
     }).format(value);
   } catch {

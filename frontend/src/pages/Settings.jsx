@@ -5,7 +5,7 @@ import PageLoader from '../components/ui/PageLoader';
 import { settingsApi } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { errorMessage } from '../utils/format';
+import { errorMessage, formatMoney, CURRENCIES } from '../utils/format';
 
 export default function Settings() {
   const { setSettings, reload } = useAuth();
@@ -91,8 +91,11 @@ export default function Settings() {
             <div>
               <label className="label flex items-center gap-1.5"><Coins className="h-3.5 w-3.5" /> Devise</label>
               <select className="input" value={form.currency ?? 'EUR'} onChange={set('currency')}>
-                {['EUR', 'FCFA', 'USD', 'XOF', 'CAD', 'CHF', 'MAD'].map((c) => <option key={c} value={c}>{c}</option>)}
+                {CURRENCIES.map((c) => <option key={c.code} value={c.code}>{c.symbol} {c.label} ({c.code})</option>)}
               </select>
+              <p className="mt-1.5 text-xs text-gray-400">
+                Aperçu : {formatMoney(250000, form.currency ?? 'EUR')}
+              </p>
             </div>
             <div>
               <label className="label">Langue</label>
